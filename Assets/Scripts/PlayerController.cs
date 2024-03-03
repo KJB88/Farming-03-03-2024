@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -6,7 +7,11 @@ public class PlayerController : MonoBehaviour
 
     // Carry
     [SerializeField] Transform localCarryPos;
+    [SerializeField] Vector3 currentDropPosition;
+
     [SerializeField] IPickupable currentCarried;
+
+    List<IPickupable> nearbyCrops = new List<IPickupable>();
 
     // Update is called once per frame
     void Update()
@@ -16,17 +21,59 @@ public class PlayerController : MonoBehaviour
 
         transform.position += moveSpeed * Time.deltaTime * new Vector3(x, y, 0.0f);
 
-        if (currentCarried != null)
-            currentCarried.UpdatePickup(localCarryPos.position);
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            // Already carrying, dump it
+            if (currentCarried != null)
+            {
+                currentCarried.OnUnpickup(this);
+                currentCarried = null;
+                return;
+            }
 
+            // If no crops nearby, cant pick up!
+            if (nearbyCrops.Count == 0)
+                return;
+
+            // Pickup from list!
+            currentCarried = nearbyCrops[0];
+            currentCarried.OnPickup();
+            nearbyCrops.Remove(currentCarried);
+        }
+
+        if (currentCarried == null)
+            return;
+
+        currentCarried.UpdatePickup(localCarryPos.position);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Crop"))
+        if (collision.gameObject.layer != LayerMask.NameToLayer("Crop"))
+            return;
+
+        IPickupable item = collision.GetComponent<IPickupable>();
+
+        if (currentCarried == item)
+            return;
+
+        nearbyCrops.Add(item);
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.gameObject.layer != LayerMask.NameToLayer("Crop"))
+            return;
+
+        IPickupable item = collision.GetComponent<IPickupable>();
+
+        foreach (IPickupable p in nearbyCrops)
         {
-            currentCarried = collision.GetComponent<IPickupable>();
-            currentCarried.OnPickup();
+            if (p == item)
+            {
+                nearbyCrops.Remove(p);
+                break;
+            }
         }
     }
 }
