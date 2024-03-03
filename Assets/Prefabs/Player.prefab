@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7367957238111400923}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: CarryPos
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -80,7 +80,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 3
-  localCarryPos: {fileID: 0}
+  localCarryPos: {fileID: 7367957238111400923}
+  currentDropPosition: {x: 0, y: 0, z: 0}
 --- !u!212 &2507980307339442052
 SpriteRenderer:
   m_ObjectHideFlags: 0
